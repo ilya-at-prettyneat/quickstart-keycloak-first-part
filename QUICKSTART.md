@@ -43,7 +43,7 @@ Any IDE of choice will do, Vue needs Node 16 to be installed though.
 
 ### 1) Get Docker
 
-Docker pushes for the usage of Docker Desktop as of this writing, although using the tried and true Docker engine and `docker compose up` will yield exactly the same results. 
+Docker pushes for the usage of Docker Desktop as of this writing, although using the tried and true Docker engine and `docker compose up` will yield exactly the same results.
 You can get Docker Desktop on the [Docker website](https://www.docker.com/get-started/).
 On Windows, if during installation you get asked for **admin credentials**, then likely you won't be able to properly run Docker Desktop until you add your user to the `docker-users` group using Computer Management.
 ![Refer to any online tutorial for details](https://inspectraeu-my.sharepoint.com/personal/ilya_prettyneat_io/Documents/_temp_pub_res/computer-management.png) _Refer to any online guide for more details_
@@ -123,7 +123,7 @@ First thing to do is check out the **Clients** (menu on the left):
 
 - Among the pre-configured clients there is `account`. Open the client, Scroll down to the "Access settings" section and switch on **Client Authentication**. Next, check "Service account roles". This allows the "account" client to use its own secret to authenticate itself. Save (bottom of the page).
 - Navigate to the "Credentials" tab and set the authenticator to "Client Id and Secret", thus allowing this Client to authenticate with the equivalent of a secret key. Regenerate the key (if the button is greyed out, reload) and take note of it.
-- Finally, back to the "Settings", we need to add a valid URI where our OIDC path will be redirect. Add `http://localhost:3000/*` and `http://localhost:5000/*` as valid URIs (default URIs for Vue3, .NET, with a wildcard).
+- Finally, back to the "Settings", we need to add a valid URI where our OIDC path will be redirect. Add `http://127.0.0.1:5173/*` and `http://localhost:5000/*` as valid URIs (default URIs for Vue3, .NET, with a wildcard).
 - Now, back to the list of clients, open `realm-management` and re-generate the Secret Key like before (take note of it). Check in the "Roles" tab that the list of roles is not empty
 
 ![Addition of valid redirect URIs](https://inspectraeu-my.sharepoint.com/personal/ilya_prettyneat_io/Documents/_temp_pub_res/adding_uris.png)
@@ -488,4 +488,66 @@ The features we are trying to create are the following:
 - Another button that will allow authentication via KeyCloak
 - Given that Vue Router is being used, have an authentication-only page that uses frontend authentication verification
 
-The initial template of the application already has several elements of decoration. Run the application at least once with `# npm run dev` to ensure that all depedencies are correct and then proceed to clean the template.
+The initial template of the application already has several elements of decoration. Run the application at least once with `# npm run dev` to ensure that all depedencies are correct and then proceed to clean the template:
+
+- In `views/HomeView.vue` everything can be removed inside the `<template></template>` tags and replace with a simple `<div class="home"></div>` (which will suffice for the beginning)
+- In `views/AboutView.vue` the inner text may be replaced with something indicating the purpose of the page, such as "Only authenticated users may see this page"
+- A new component called `views/APIReaderView.vue` may be created -- it will not contain code initially
+
+#### 5a) The API Reader
+
+In the `views/APIReaderView.vue` an introduction should be shown, together with a component that will make the API call on a button press:
+
+```vue
+<script setup>
+</script>
+
+<template>
+    <div class="api">
+        Press the button underneath to perform the API call.
+        This call will fail if the current user is not authenticated!
+        The component will report on this.
+    </div>
+</template>
+```
+
+The component then needs to be created.
+This will be done using the classic **Options API**, reason being it is easier to read for those coming from a mostly backend background or Vue1/Vue2, and faster and more consistent in this small example.
+
+The file should be `components/APIReader.vue`:
+
+```vue
+<template>
+    <div class="reader">
+        <button class="reader__start" type="button" v-if="!isCalling" @click="doCall">Call the API</button>
+        <div class="reader__state" v-else>
+            <p class="reader__state__string"></p>
+            <div class="reader__state__loader" v-if="isLoading">Loading...</div>
+        </div>
+    </div>
+</template>
+<script>
+export default {
+
+}
+</script>
+```
+
+The CSS in the example is based on the **BEM** paradygm but this choice is arbitrary.
+
+This is a minimal component but it can be already included in the view to ensure it gets rendered in the `views/APIReaderView.vue`:
+
+```vue
+<script setup>
+import APIReader from '../components/APIReader.vue'
+</script>
+
+<template>
+    <div class="api">
+        // [...]
+        <APIReader></APIReader>
+    </div>
+</template>
+```
+
+The code of the component is thoroughly commented in the example and the exact extent of Vue is beyond the scope of the quickstart, however its logic is as follows:
