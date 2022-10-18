@@ -86,8 +86,7 @@ services:
         - postgres
 ```
 
-`code-note`
-_YAML employs whitespace as a signifier, so be careful if you're writing on your own_
+`{` _YAML employs whitespace as a signifier, so be careful if you're writing on your own_ `}`
 
 > **A word of caution**
 > The passwords above are, obviously, not production safe.
@@ -215,8 +214,8 @@ The installed packages both require configuration values to work properly.
   }
 ```
 
-`code-note`
-_(to be placed in `appsettings.json`)_
+`{` _(to be placed in `appsettings.json`)_ `}`
+
 Note that the `JwtBearer` has to be explicitly configured with the values during service initialization (this will come next).
 **For the `KeyCloakProvider`** package, a valid configuration is:
 
@@ -279,6 +278,7 @@ In the **minimal API** way of handling requests, parameter declaration for the h
 Minimal validation:
 
 ```c#
+//...
 // Process(){
             
 //check for the presence of a "code" in the query
@@ -293,11 +293,13 @@ if (string.IsNullOrWhiteSpace(code))
   return Results.BadRequest("No valid code could be found");
   
 // }
+//...
 ```
 
 Then the single line to exchange the code for information:
 
 ```c#
+//...
 //  return Results.BadRequest("No valid code could be found");
 
 //attempt to validate and retrieve user-info
@@ -310,6 +312,7 @@ if ( kcResults.Success)
 return Results.StatusCode(kcResults.HttpErrorCode ?? 400);
 
 // }
+//...
 ```
 
 `kcResults` is an object that contains a wealth of information, the success of the compound operation (code exchange and user-info request), the user's claims, refresh token data and more.
@@ -317,6 +320,7 @@ return Results.StatusCode(kcResults.HttpErrorCode ?? 400);
 Once this information is exchanged all that is left is returning a valid JWT -- an encoded string of claims and a verifiable signature.
 
 ```c#
+//...
 // if ( kcResult.Success) {
 
 //convert the result to a small list of meaningful claims
@@ -344,6 +348,7 @@ var jwtString = jwtGenerator.WriteToken(token);
 return Results.Json(new { token = jwtString });
 
 // }
+//...
 ```
 
 `JwtSecurityTokenHandler`, `JwtSecurityToken` and `SymmetricSecurityKey` are actually all part of the vendor provided tools for handling the tokens (and have ample documentation available).
@@ -390,11 +395,13 @@ namespace ExampleAPI
 Now the mapping of this handler is done by minimal API conventions, right under the existing one in `Program.cs`
 
 ```c#
+//...
 // .WithName("GetWeatherForecast");
 
 app.MapGet("/oauth", OauthEndpoint.Process);
 
 // app.Run();
+//...
 ```
 
 The solution layout should closely resemble the following:
@@ -408,6 +415,7 @@ _Packages and contents of the files should match_
 All of the necessary configuration is performed in `Program.cs`
 
 ```c#
+//...
 // builder.Services.AddSwaggerGen();
 
 //get configurator
@@ -436,6 +444,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddKeyCloakProvider();
 
 //var app = builder.Build();
+//...
 ```
 
 `aot_conf` here is assigned the value of the Configuration object of the builder. In .NET 6, this is allowed to access configuration values before the configuration is canonically built (before, a separate instance would have to be built).
@@ -445,25 +454,89 @@ builder.Services.AddKeyCloakProvider();
 The only missing part is injecting the authentication middleware and handlers in the correct order:
 
 ```c#
+//...
 //}
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 //var summaries = new[]
+//...
 ```
 
 Finally, the routes can now be respectively secured and left anonymous:
 
 ```c#
-.WithName("GetWeatherForecast") // remove the ;
+//...
+// .WithName("GetWeatherForecast")
 .RequireAuthorization();
 
 app.MapGet("/oauth", OauthEndpoint.Process) // remove the ;
     .AllowAnonymous();
+
+//...
 ```
 
 Now, "all that's left" is a frontend to actually use this.
+
+#### 4e) But wait, there's CORS! _(quote)_
+
+While this is not strictly necessary for this tutorial, CORS will be an issue if the app is run "as is" due to the Origins of the frontend and backend being different. 
+To address this, in the Minimal API:
+
+```c#
+//...
+// var aot_conf = builder.Configuration as IConfigurationRoot;
+
+builder.Services.AddCors(opts =>
+{
+    opts.AddPolicy("vue3",
+        pol =>
+    {
+        pol.AllowAnyHeader();
+        pol.AllowAnyMethod();
+        pol.AllowCredentials();
+        pol.WithOrigins("http://127.0.0.1:5173");
+        pol.Build();
+    });
+});
+
+// builder.Services.AddAuthentication(opts =>
+//...
+```
+
+A policy does not need to have a name if it is declared default. However, CORS should be explicitly declared per-route at least in .NET6.0:
+
+```c#
+//...
+
+app.UseCors("vue3");
+
+// app.UseAuthentication();
+//...
+```
+
+```c#
+// ...
+// .WithName("GetWeatherForecast")
+.RequireAuthorization()
+.RequireCors("vue3");
+
+app.MapGet("/oauth", OauthEndpoint.Process)
+    .AllowAnonymous()
+    .RequireCors("vue3");
+
+app.Urls.Clear();
+app.Urls.Add("http://localhost:5000");  //set correct backend URI
+
+// app.Run();    
+// ...
+```
+
+This will allow the frontend and the backend to communicate without any issue, provided the URIs are conistent
+
+> **a word of caution**
+> Origin is a fickle concept in web practice, accessing the Vue3 application from `localhost` rather than `127.0.0.1` will fail against CORS rules
 
 ### 5) The Frontend Vue
 
@@ -476,7 +549,7 @@ Create a new project in Vue3, which is very simple provided you have installed [
 √ Add TypeScript? ... [No] / Yes
 √ Add JSX Support? ... [No] / Yes
 √ Add Vue Router for Single Page Application development? ... No / [Yes]
-√ Add Pinia for state management? ... [No] / Yes
+√ Add Pinia for state management? ... No / [Yes]
 √ Add Vitest for Unit Testing? ... [No] / Yes
 √ Add Cypress for both Unit and End-to-End testing? ... [No] / Yes
 √ Add ESLint for code quality? ... [No] / Yes
@@ -544,10 +617,17 @@ import APIReader from '../components/APIReader.vue'
 
 <template>
     <div class="api">
-        // [...]
+        // [...
+        // ...]
         <APIReader></APIReader>
     </div>
 </template>
 ```
 
 The code of the component is thoroughly commented in the example and the exact extent of Vue is beyond the scope of the quickstart, however its logic is as follows:
+
+- Set display-state variables to signify that a call can be made
+- Once button is pressed, signify that a call is being made and disallow further calls
+- Attempt to fetch the protected resource
+- If the attempt is either successful (code 200) or authentication failure (401) state so directly
+- Otherwise catch all other errors

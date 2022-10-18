@@ -2,7 +2,7 @@
     <div class="reader">
         <button class="reader__start" type="button" v-if="!isCalling" @click="doCall">Call the API</button>
         <div class="reader__state" v-else>
-            <p class="reader__state__string">{{ stateString }}</p>
+            <p class="reader__state__string" v-for="s in stateStrings" :key="s">{{s}}</p>
             <pre class="reader__state__outcome" v-if="isSuccess">{{this.resultText}}</pre>
             <div class="reader__state__loader" v-if="isLoading">Loading...</div>
         </div>
@@ -16,7 +16,7 @@ export default {
             isCalling: false,   //is the component performing an API call
             isLoading: false,   //is the component awaiting a result
             isSuccess: false,   //the call yielded a result
-            stateString: '',    //state string
+            stateStrings: [],    //state strings
             resultText: ''      //text of the result, if one is present
         }
     },
@@ -24,34 +24,37 @@ export default {
         async doCall(){
             //reset the state
             this.isCalling = true;
-            this.stateString = '';
+            this.stateStrings = [];
 
-            //show loading
+            //show loading (yes, just for show)
             this.isLoading = true;
             await new Promise( r => setTimeout(r,400));
             this.isLoading = false;
 
             //start the call
-            this.stateString = 'Calling the API...';
+            this.stateStrings.push('Calling the API...');
             this.isLoading = true;
 
             //try-catch block for the fetch API
             try {
-                let results = await fetch('http://localhost:5000/weatherforecast');
+                this.stateStrings.push('Performing a fetch')
+                let results = await fetch('http://localhost:5000/weatherforecast', { mode: 'cors' });
 
                 //turn off loading 
                 this.isLoading = false;
+                this.stateStrings.push('...completed');
 
                 //call is unauthenticated
                 if (results.status == 401){
-                    this.stateString += '\r\n ...the call resulted in a 401 (Unautheticated user). Is the user authenticated?';
+                    this.stateStrings.push('fetch returned a 401 error: Unauthenticated');
                 }
                 else
                 //call is successful
                 if (results.status == 200){
+                    console.log('yay');
                     this.isSuccess = true;
                     let weather = await results.json();
-                    this.stateString += '\r\n...call successful:';
+                    this.stateStrings.push('Call was successful (status code 200)');
                     for (let cast of weather){
                         this.resultText += `\r\n ${weather.Summary}, ${weather.TemperatureC} degrees.`
                     }
@@ -59,12 +62,14 @@ export default {
                 else
                 //other result, unexpected
                 {
-                    this.stateString += '\r\n ...the call was unsuccessful. Reload and retry'
+                    this.stateStrings.push('...the call resulted in a different error. Reload and try again')
                 }
             }
             catch(err){
+                console.log(err)
                 //fetch failed entirely (network error)
-                this.stateString += `\r\n ...the call was unsuccessful: ${err}`
+                this.stateStrings.push(`...the call resulted in an error: ${err}`)
+                this.stateStrings.push('(Verify the URI of the frontend application for CORS issues)')
             }
         }
     }
@@ -99,11 +104,14 @@ export default {
             width: 33%;
             justify-self: center;
             padding: 3px;
-            border: 1px solid rgba(0,0,0,0.3);
+            border: 1px solid var(--color-border);
+            background: var(--color-background-soft);
+            color: var(--color-text);
             border-radius: 5%;
             transition: border-radius 1s ease;
             &:hover{
-                border-radius: 8%;
+                border-radius: 15%;
+                border: 2px solid var(--color-border-hover);
             }
         }
         &__state{

@@ -13,6 +13,20 @@ builder.Services.AddSwaggerGen();
 //get configurator
 var aot_conf = builder.Configuration as IConfigurationRoot;
 
+//add permissive-ish cors options for the frontend
+builder.Services.AddCors(opts =>
+{
+    opts.AddPolicy("vue3",
+        pol =>
+    {
+        pol.AllowAnyHeader();
+        pol.AllowAnyMethod();
+        pol.AllowCredentials();
+        pol.WithOrigins("http://127.0.0.1:5173");
+        pol.Build();
+    });
+});
+
 //add the Authentication and Authorization suite
 builder.Services.AddAuthentication(opts =>
 {
@@ -44,8 +58,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+//this middleware HAS to run before AuthN/AuthZ
+app.UseCors("vue3");
+
 app.UseAuthentication();
 app.UseAuthorization();
+
 
 var summaries = new[]
 {
@@ -65,10 +83,15 @@ app.MapGet("/weatherforecast", () =>
     return forecast;
 })
 .WithName("GetWeatherForecast")
-.RequireAuthorization();
+.RequireAuthorization()
+.RequireCors("vue3");
 
 app.MapGet("/oauth", OauthEndpoint.Process)
-    .AllowAnonymous();
+    .AllowAnonymous()
+    .RequireCors("vue3");
+
+app.Urls.Clear();
+app.Urls.Add("http://localhost:5000");
 
 app.Run();
 
