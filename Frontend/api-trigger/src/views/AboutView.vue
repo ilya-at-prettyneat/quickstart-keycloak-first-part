@@ -3,11 +3,13 @@ import { mapStores } from 'pinia'
 import { useAuthStore } from '../stores/auth';
 
 export default{
-  computed(){
-    mapStores(useAuthStore)
+  computed:{
+    ...mapStores(useAuthStore)
   },
   mounted(){
-    console.log(this.authStore);
+    if ( !this.authStore.isLoggedIn ){
+      this.$router.push('/?unauthorized=true');
+    }
   }
 }
 </script>

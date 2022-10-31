@@ -10,6 +10,11 @@ const router = createRouter({
       component: HomeView
     },
     {
+      path: '/oauth',
+      name: 'home (auth)',
+      component: HomeView
+    },
+    {
       path: '/about',
       name: 'about',
       // route level code-splitting

@@ -43,6 +43,22 @@ builder.Services.AddAuthentication(opts =>
                       ValidIssuer = aot_conf["Jwt:issuer"],
                       IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(aot_conf["Jwt:secret"]))
                   };
+
+                  opts.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
+                  {
+                      OnForbidden = (ctx) =>
+                      {
+                          return Task.CompletedTask;
+                      },
+                      OnAuthenticationFailed = (ctx) =>
+                      {
+                          return Task.CompletedTask;
+                      },
+                      OnChallenge = (ctx) =>
+                      {
+                          return Task.CompletedTask;
+                      }
+                  };
               });
 
 builder.Services.AddAuthorization();

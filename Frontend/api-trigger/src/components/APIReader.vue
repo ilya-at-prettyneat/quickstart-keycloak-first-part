@@ -10,7 +10,13 @@
 </template>
 
 <script>
+import { mapStores } from 'pinia';
+import { useAuthStore } from '../stores/auth';
+
 export default {
+    computed:{
+        ...mapStores(useAuthStore)
+    },
     data(){
         return {
             isCalling: false,   //is the component performing an API call
@@ -38,11 +44,24 @@ export default {
             //try-catch block for the fetch API
             try {
                 this.stateStrings.push('Performing a fetch')
-                let results = await fetch('http://localhost:5000/weatherforecast', { mode: 'cors' });
+
+                let opts = {
+                    mode: 'cors'
+                }
+
+                if (this.authStore.isLoggedIn){
+                    opts.headers = {
+                        'Authorization': `Bearer ${this.authStore.jwtToken}`
+                    }
+                }
+
+                let results = await fetch('http://localhost:5000/weatherforecast', opts);
 
                 //turn off loading 
                 this.isLoading = false;
                 this.stateStrings.push('...completed');
+
+                console.log(results);
 
                 //call is unauthenticated
                 if (results.status == 401){
@@ -56,7 +75,7 @@ export default {
                     let weather = await results.json();
                     this.stateStrings.push('Call was successful (status code 200)');
                     for (let cast of weather){
-                        this.resultText += `\r\n ${weather.Summary}, ${weather.TemperatureC} degrees.`
+                        this.resultText += `\r\n ${cast.summary}, ${cast.temperatureC} degrees.`
                     }
                 }
                 else
