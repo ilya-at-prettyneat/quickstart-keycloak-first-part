@@ -1,26 +1,8 @@
 <script setup>
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
-import { useAuthStore } from './stores/auth'
-import { onMounted } from 'vue'
 
-//make store accessible
-const authStore = useAuthStore();
-const route = useRoute();
 
-onMounted(async () => {
-  //if we have a code part in the query params
-  if (route.query && route.query.code){
-    let token = await fetch(`http://localhost:5000/oauth?code=${route.query.code}`);
-
-    if ( token.ok ){
-      const tokenValue = await token.json();
-
-      authStore.login(tokenValue.token);
-      console.log('done');
-    }
-  }
-})
 </script>
 
 <template>
@@ -28,7 +10,7 @@ onMounted(async () => {
     <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
 
     <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+      <HelloWorld :msg="msg" />
 
       <nav>
         <RouterLink to="/">Home</RouterLink>

@@ -7,7 +7,9 @@ export default{
     ...mapStores(useAuthStore)
   },
   mounted(){
+    //check immediately if logged in
     if ( !this.authStore.isLoggedIn ){
+      //if not, redirect with a query param
       this.$router.push('/?unauthorized=true');
     }
   }

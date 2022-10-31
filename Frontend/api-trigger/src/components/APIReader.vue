@@ -15,7 +15,7 @@ import { useAuthStore } from '../stores/auth';
 
 export default {
     computed:{
-        ...mapStores(useAuthStore)
+        ...mapStores(useAuthStore)  //spread operator to use the Pinia store in this component
     },
     data(){
         return {
@@ -37,7 +37,7 @@ export default {
             await new Promise( r => setTimeout(r,400));
             this.isLoading = false;
 
-            //start the call
+            //start the actual call, set the loader again
             this.stateStrings.push('Calling the API...');
             this.isLoading = true;
 
@@ -45,10 +45,12 @@ export default {
             try {
                 this.stateStrings.push('Performing a fetch')
 
+                //we are declaring the block of fetch options to be able to inject the header, if needed
                 let opts = {
                     mode: 'cors'
                 }
 
+                //add the authorization header if there is a token available
                 if (this.authStore.isLoggedIn){
                     opts.headers = {
                         'Authorization': `Bearer ${this.authStore.jwtToken}`
@@ -61,8 +63,6 @@ export default {
                 this.isLoading = false;
                 this.stateStrings.push('...completed');
 
-                console.log(results);
-
                 //call is unauthenticated
                 if (results.status == 401){
                     this.stateStrings.push('fetch returned a 401 error: Unauthenticated');
@@ -70,10 +70,11 @@ export default {
                 else
                 //call is successful
                 if (results.status == 200){
-                    console.log('yay');
+                    
                     this.isSuccess = true;
                     let weather = await results.json();
                     this.stateStrings.push('Call was successful (status code 200)');
+                    //for...of iterates everything in an array or iterable list
                     for (let cast of weather){
                         this.resultText += `\r\n ${cast.summary}, ${cast.temperatureC} degrees.`
                     }
@@ -85,7 +86,6 @@ export default {
                 }
             }
             catch(err){
-                console.log(err)
                 //fetch failed entirely (network error)
                 this.stateStrings.push(`...the call resulted in an error: ${err}`)
                 this.stateStrings.push('(Verify the URI of the frontend application for CORS issues)')

@@ -1,21 +1,24 @@
 <script setup>
-import TheWelcome from '../components/TheWelcome.vue'
 import {ref, onMounted} from 'vue';
 import {useRoute} from 'vue-router';
 import { useAuthStore } from '../stores/auth';
+
 const fromProtected = ref(false);
 const route = useRoute();
 const authStore = useAuthStore();
+
 onMounted(async () => {
+  //if redirection happened here with a note about being unauthorized, set the reactive value
   if ( route.query.unauthorized && route.query.unauthorized=='true')
     fromProtected.value = true;
 
   //get token via oauth
   if ( route.query.code && route.query.code.length ){
     let outcome = await fetch(`http://localhost:5000/oauth?code=${route.query.code}`)
+    // request went well
     if ( outcome.ok ){
       let data = await outcome.json();
-
+      // call the action in the store to set the token and be "isLoggedIn"
       authStore.login(data.token);
     }
   }

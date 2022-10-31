@@ -8,8 +8,10 @@ export const useAuthStore = defineStore('auth', {
     },
     actions: {
       login(token) {
+        // login should not be used as an alternative to logout
         if ( !token || !token.length ) throw('use logout() to reset the token');
         
+        //login should also not be used for a logged in user
         if ( this.tokenValue && this.tokenValue.length ) throw('already logged in');
 
         this.tokenValue = token;
