@@ -29,7 +29,7 @@ We will need to have a local database to store, mostly, KeyCloak's information w
 
 #### Visual Studio 2022 and the default Minimal API template
 
-This is the default project template you will find ready and waiting in VS2022 - it provides just the right amount of simplicity and endpoints.
+This is the default project template you will find ready and waiting in VS2022 - it provides just the right amount of simplicity and endpoints.  
 Visual Studio community is free of charge at time of writing, [here](https://visualstudio.microsoft.com/vs/community/).
 
 #### KeyCloak Provider Nuget
@@ -44,14 +44,14 @@ Any IDE of choice will do, Vue needs Node 16 to be installed though.
 
 ### 1) Get Docker
 
-Docker pushes for the usage of Docker Desktop as of this writing, although using the tried and true Docker engine and `docker compose up` will yield exactly the same results.
-You can get Docker Desktop on the [Docker website](https://www.docker.com/get-started/).
-On Windows, if during installation you get asked for **admin credentials**, then likely you won't be able to properly run Docker Desktop until you add your user to the `docker-users` group using Computer Management.
+Docker pushes for the usage of Docker Desktop as of this writing, although using the tried and true Docker engine and `docker compose up` will yield exactly the same results.  
+You can get Docker Desktop on the [Docker website](https://www.docker.com/get-started/).  
+On Windows, if during installation you get asked for **admin credentials**, then likely you won't be able to properly run Docker Desktop until you add your user to the `docker-users` group using Computer Management.  
 ![Refer to any online tutorial for details](./res/computer-management.png) _Refer to any online guide for more details_
 
 ### 2) Run a container with KeyCloak and a database in it
 
-Once you manage to properly run Docker Desktop, it will ask you if you wish to maybe, perhaps, run a **PostgreSQL** example -- don't (it actually complicates network handling).
+Once you manage to properly run Docker Desktop, it will ask you if you wish to maybe, perhaps, run a **PostgreSQL** example -- don't (it actually complicates network handling).  
 Rather, create a comfortable folder for a `YAML` file with the name `docker-compose.yml` and the following content:
 
 ```yaml
@@ -107,19 +107,19 @@ At this point, we may want to visit our instance and see what's going on.
 
 ### 3) Configure KeyCloak
 
-Using your browser of choice, navigate to [`http://localhost:8080/`](http://localhost:8080/) -- you can see (and configure) the port in Docker.
+Using your browser of choice, navigate to [`http://localhost:8080/`](http://localhost:8080/) -- you can see (and configure) the port in Docker.  
 Then press `Administration Console` and enter the credentials when prompted (they are hardcoded in the YAML file, for the moment):
 
 `
-Username: admin
+Username: admin  
 Password: REPLACEMETOO
 `
 
 Once greeted by the admin panel, we shall start by creating a **Realm**, the topmost "container" in KeyCloak that can be configured with its own rules, clients, users, providers and so on.
 ![KeyCloak - Create Realm button](./res/create-realm.png)
 
-**Very important: pick a URI-valid name**
-The name should be a simple word or a slug, anything that would not break even the simplest of URI, as the name of the Realm will become part of all of the authentication paths going forward.
+**Very important: pick a URI-valid name**  
+The name should be a simple word or a slug, anything that would not break even the simplest of URI, as the name of the Realm will become part of all of the authentication paths going forward.  
 **for this tutorial we will name our realm `test`**
 
 First thing to do is check out the **Clients** (menu on the left):
@@ -164,8 +164,8 @@ Once both packages are installed, the app's configuration needs to be amended, b
 
 **A disambiguation about `JWT`**
 
-The `JWT` standard is often confused or conflated with `JSON`, although it is, at its core, a specially structured `JSON` object, with well defined fields.
-This is how it may appear in the wild:
+The `JWT` standard is often confused or conflated with `JSON`, although it is, at its core, a specially structured `JSON` object, with well defined fields.  
+This is how it may appear _in the wild_:
 
 `
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
@@ -249,9 +249,9 @@ In this example: `http://localhost:5137/oauth` (_trailing slash matters_)
 
 In the typical OIDC (Open ID Connection) scenario, the End User will navigate to the **OP** (OIDC Provider, i.e. **KeyCloak**), verify their identity with some method and then be returned to the **Client** (the application who needed to know the identity) with a **code** which can be exchanged with the **OP** to confirm the identity.
 
-_What if..._
-In the real world, if a User wants access to a Canteen, the Canteen directs them to an Operator who knows how to recognize forged IDs. The Operator gives them a **code** and they bring it to the Canteen, who can phone the Operator to verify that the **code** is not a forgery itself.
-_...or not_
+_What if..._  
+In the real world, if a User wants access to a Canteen, the Canteen directs them to an Operator who knows how to recognize forged IDs. The Operator gives them a **code** and they bring it to the Canteen, who can phone the Operator to verify that the **code** is not a forgery itself.  
+_...or not_  
 
 The tasks to achieve are:
 
@@ -381,7 +381,7 @@ private static List<Claim>? MakeClaims(KCTokenizedIdentityResponse? identity)
 }
 ```
 
-The `Statics.CustomClaims.RefreshToken` is a static string that can be used to uniquely identify a Claim for the refresh token.
+The `Statics.CustomClaims.RefreshToken` is a static string that can be used to uniquely identify a Claim for the refresh token.  
 Claims need to specify a valid resource locator, but that includes anything which contains URN-valid characters and starts with `urn:`
 
 The `Statics.cs` file:
@@ -492,7 +492,7 @@ Now, "all that's left" is a frontend to actually use this.
 
 #### 4e) But wait, there's CORS! _(quote)_
 
-While this is not strictly necessary for this tutorial, CORS will be an issue if the app is run "as is" due to the Origins of the frontend and backend being different. 
+While this is not strictly necessary for this tutorial, CORS will be an issue if the app is run "as is" due to the `Origins` of the frontend and backend being different.  
 To address this, in the Minimal API:
 
 ```c#
@@ -516,7 +516,7 @@ builder.Services.AddCors(opts =>
 //...
 ```
 
-A policy does not need to have a name if it is declared default. However, CORS should be explicitly declared per-route at least in .NET6.0:
+A policy does not need to have a name if it is declared default. However, CORS should be explicitly declared **per-route at least in .NET6.0**:
 
 ```c#
 //...
@@ -630,6 +630,7 @@ This store will be used close to everywhere in the frontend application.
 #### 5b) Setting up the basics: processing
 
 Opening the `views/HomeView.vue`, the `<script setup>` doesn't do much so far.
+
 Logic in this section should cater for two objectives:
 
 **1)** When the user comes back from an **OAuth redirect** having a `code`, attempt to send that code to the backend:
