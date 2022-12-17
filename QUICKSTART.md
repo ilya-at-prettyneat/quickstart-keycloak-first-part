@@ -70,19 +70,22 @@ services:
         POSTGRES_DB: keycloak
         POSTGRES_USER: keycloak
         POSTGRES_PASSWORD: REPLACEME
+      hostname: "pgdb" # using this hostname explicitly avoids dealing with localhost inconsistencies when moving between different operating systems
+      # ports: # uncomment this to be able to access the database from the host system
+      # - 127.0.0.1:5432:5432
 
   keycloak:
       image: bitnami/keycloak:latest
       environment:
-        KEYCLOAK_DATABASE_HOST: localhost
+        KEYCLOAK_DATABASE_HOST: pgdb
         KEYCLOAK_DATABASE_NAME: keycloak
         KEYCLOAK_DATABASE_USER: keycloak
         KEYCLOAK_DATABASE_PASSWORD: REPLACEME
         KEYCLOAK_ADMIN: admin
         KEYCLOAK_ADMIN_PASSWORD: REPLACEMETOO
-
       ports:
-        - 8080:8080
+      - 127.0.0.1:8080:8080 # prepending 127.0.0.1 prevents unintuitive interactions with host firewall
+      - 127.0.0.1:8443:8443
       depends_on:
         - postgres
 ```
